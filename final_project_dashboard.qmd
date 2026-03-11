@@ -1,0 +1,303 @@
+---
+title: "Data Analysis & Dashboard"
+subtitle: "Crime and COVID-19 Trends in Los Angeles"
+author: "| Cristina De Dios, Zohra Buttar, Shinaya Hu"
+date: today
+format:
+  dashboard:
+    theme: cosmo
+    embed-resources: true
+execute:
+  echo: true
+---
+
+# Introduction {.tabset}
+## Sections {.tabset}
+
+### 1.1 Topical Overview
+
+::: {.card title="Project Background"}
+Crime patterns are largely influenced by social disruptions, and the COVID-19 pandemic created one of the most significant societal shifts in recent history. Towards the beginning of 2020, society experienced a sequence of changes, such as lockdown policies, limited mobility, and changes in economic activity that altered daily life in the United States.
+
+Researchers and policymakers have invested in understanding how these changes have affected both **public safety** and **crime patterns**. In one example, studies have shown that restrictions created by the pandemic influenced the frequency and type of crime reported in urban areas (summary can be referenced from the National Institute of Justice: https://nij.ojp.gov/topics/articles/covid-19-and-crime). Understanding the patterns that have occurred can help cities better prepare for emergencies or large social disruptions like the pandemic in the future. 
+
+Our project aims to explore the relationship between **pandemic changes** and **crime trends** in *Los Angeles*, a major city in California. We combined official crime report data from the Los Angeles Police Department (https://catalog.data.gov/dataset/crime-data-from-2020-to-present) with COVID-19 case data (https://covidtracking.com/data/) to analyze how crime patterns changed during the pandemic. Through this process, we were able to understand **whether changes in public health conditions correspond with changes in crime activity**. 
+
+This analysis addresses an important question for both researchers and policymakers. If major public health events influence crime patterns, city officials may be able to **better anticipate resource needs during emergencies**, including policing strategies, community support services, and emergency response planning. At the same time, there are also ethical considerations and limitations to the data. For example, crime data only reflects incidents that were reported to police, meaning that not all crimes were reported. Moreover, COVID-19 data is reported at the state level rather than the city level, which may have caused differences between statewide pandemic conditions and local conditions specific to Los Angeles.
+:::
+
+::: {.card title="Research Questions"}
+We focused on these **three** big picture questions: 
+
+**1. Did the total crime in Los Angeles decrease during the COVID-19 pandemic lockdown period?**
+
+**2. What were the most common crime types during the pandemic years (2020-2021)?**
+
+**3. Is there a correlation between daily COVID cases and daily crime reports?**
+:::
+
+```{r}
+#| echo: false
+knitr::include_graphics("~/Downloads/crime_and_covid.jpg")
+
+```
+
+
+### 1.2 Providing Data Context
+
+::: {.card title="Data Context for LA Crimes"}
+
+**Data Link:** https://catalog.data.gov/dataset/crime-data-from-2020-to-present 
+
+**Data Creators:** Los Angeles Police Department (LAPD), Data.gov
+
+This dataset contains crime reports collected by the Los Angeles Police Department from 2020 through January 2026. Each incident was recorded by an LAPD officer and is a row that represents a single reported crime event. It includes variables such as the date and time of occurrence, area name, crime type, weapon used, and victim demographic information. The dataset includes approximately 1,004,991 observations and 30 variables, representing reported incidents across the city of Los Angeles. Because the data comes directly from official LAPD reports, it provides a strong representation of reported crime trends; however, a limitation is that crimes that were not reported to police are not included, and some variables such as victim age or sex contain missing or inconsistent values.
+:::
+
+::: {.card title="Data Context for COVID Cases"}
+
+**Data Link:** https://covidtracking.com/data/
+
+**Data Creators:** The COVID Tracking Project
+
+This dataset contains COVID-19 case and testing data collected from U.S. state public health departments during the pandemic. Each state reported daily counts of confirmed positive cases, deaths, hospitalizations, and total tests administered by state health agencies. It also includes variables such as confirmed positive cases, deaths, hospitalizations, and total tests performed, with over 20,780 observations and 41 variables recorded between 2020 and early 2021. For our analysis, the dataset was filtered to California so that pandemic conditions correspond geographically with the Los Angeles crime data. A limitation of this dataset is that the data is recorded at the state level, meaning California values are used as a proxy for conditions in Los Angeles, and some variables contain missing values due to differences in reporting practices across states.
+:::
+
+### AI Disclosure
+This project was written and formatted by Shinaya Hu, Cristina De Dios, and Zohra Buttar. We used Claude by Anthropic as an AI writing assistent to help with dashboard formatting, refining written context, and correcting code syntax. Claude was not used to generate our data analysis, visualizations, or research findings.
+
+
+# Group Information
+
+::: {.card title="Cristina De Dios"}
+*cristd4@uw.edu*
+
+**Sophomore, University of Washington**
+<br>
+
+Cristina is interested in exploring how large social disruptions like the COVID-19 pandemic connect to public safety patterns over time. During her time at the Information School, she is interested in using data to analyze real world problems and communicate findings clearly. 
+:::
+
+::: {.card title="Zohra Buttar"}
+*zohrab08@uw.edu*
+
+**Junior, University of Washington**
+<br>
+
+Zohra interested in visualizing the data to see the correlation between crime and the COVID-19 pandemic in LA. Outside of the Information School, Zohra is interested in UX design to create digital experiences that make information easier to find and explore. 
+:::
+
+::: {.card title="Shinaya Hu"}
+*shu24@uw.edu*
+
+**Sophomore, University of Washington**
+<br>
+
+Shinaya is interested in explaining the data and summarizing findings between the two datasets. During her time at the Information School, Shinaya wants to build platforms that transform complexity into approachable, meaningful solutions for people. 
+:::
+
+
+
+# Data
+
+::: {.card title="Load Libraries" height="20%"}
+```{r}
+library(dplyr)
+library(ggplot2)
+```
+:::
+
+::: {.card title="Load Data"}
+```{r}
+LA_crime <- read.csv("~/Downloads/Crime_Data_from_2020_to_Present.csv")
+
+LA_crime <- LA_crime |>
+  mutate(
+    crime_date_raw = DATE.OCC,
+    crime_description = Crm.Cd.Desc
+  )
+
+Covid_Cases <- read.csv("~/Downloads/COVID_cases.csv")
+
+LA_crime <- LA_crime |>
+  mutate(date = as.Date(crime_date_raw,format = "%m/%d/%Y %I:%M:%S %p"))
+
+Covid_Cases <- Covid_Cases |>
+  mutate(date = as.Date(date))
+
+LA_covid <- Covid_Cases |>
+  filter(state == "CA")
+
+LA_joined <- LA_crime |>
+  left_join(LA_covid, by = "date")
+
+LA_covid <- Covid_Cases |>
+  filter(state == "CA")
+
+daily_crime <-
+  LA_joined |>
+  group_by(date) |>
+  summarize(
+    daily_crimes = n()
+  )
+```
+:::
+
+::: {.card title="Data Join Modifications" height="30%"}
+We created simpler versions of key LA crime columns by renaming them to **crime_date_raw** and **crime_description** to make the dataset easier to read and reference throughout the analysis. We then converted the LA crime date column from a text date-time string into an R Date type using **as.Date()** so that it could be matched with the COVID dataset's date field, and applied the same conversion to the COVID date column. Finally, we filtered the COVID dataset to **California ("CA")** using the state column so that the pandemic data aligns geographically with the Los Angeles crime data.
+:::
+
+
+
+# Research Questions & Visualizations {.tabset}
+
+## Questions {.tabset}
+### Research Question 1
+
+::: {.card title="Question and Tools" width="40%"}
+
+***Did the total crime in Los Angeles decrease during the COVID-19 pandemic lockdown period?***
+
+<br>
+
+**Tools:**
+
+This visualization examines how crime levels changed over time during the pandemic period. We used the **filter()** function to limit the dataset to dates before 2025 in order to focus on the relevant time period. We then used **group_by(date)** and **summarize()** to count the total number of crimes reported each day. The final line graph enables us to see patterns and trends in crime reporting, such as periods where crime appears to jump or lower as the pandemic progresses.
+:::
+
+::: {.card title="Visualization"}
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-alt: "Figure 1: A line plot showing daily crime reports in Los Angeles over time"
+
+LA_joined |>
+  filter(date < as.Date("2025-01-01")) |>
+  group_by(date) |>
+  summarize(daily_crimes = n()) |>
+  ggplot(aes(x = date, y = daily_crimes)) +
+  geom_line(color = "plum", linewidth = 0.5) +
+  labs(
+    title = "Daily Crime Reports in Los Angeles Over Time",
+    x = "Date",
+    y = "Number of Crimes"
+  ) +
+  theme_minimal()
+```
+:::
+
+### Research Question 2
+
+::: {.card title="Question and Tools" width="40%"}
+
+***What were the most common crime types during the pandemic years (2020-2021)?***
+
+<br>
+
+**Tools:**
+
+This visualization identifies the top ten crime types that occurred most frequently during the main pandemic years (2020-2021). We first used **filter()** to isolate crime reports between 2020 and 2021, then **group_by()** and **summarize()** are used to count how many times each crime type occurred. The **arrange()** and **slice()** functions help identify the top 10 most common crime categories, which we then chose to display using a bar chart as it helps highlight which crimes were most prevalent during this period. 
+
+**Tools not covered in class:**
+
+We implemented the **reorder()** function in the bar chart for Research Question 2 to sort crime categories by their total frequency. This function reorders a categorical variable by the values of another numeric variable, which allowed us to sort crime types by frequency rather than alphabetically in the bar chart. Without it, we could not have controlled bar ordering using basic data wrangling tools alone. We learned about this function through a general ggplot2 Google search and YouTube data visualization tutorials.
+:::
+
+::: {.card title="Visualization"}
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-alt: "Figure 2: A bar chart showing the top 10 most common crime types in LA during 2020-2021"
+
+LA_joined |>
+ filter(date >= as.Date("2020-01-01") & date < as.Date("2022-01-01")) |>
+ group_by(crime_description) |>
+ summarize(total_crimes = n()) |>
+ arrange(desc(total_crimes)) |>
+ slice(1:10) |>
+ ggplot(aes(x = reorder(crime_description, total_crimes), y = total_crimes)) +
+ geom_col(fill = "seagreen") +
+ coord_flip() +
+ labs(
+   title = "Top 10 Crime Types in Los Angeles During 2020–2021",
+   x = "Crime Type",
+   y = "Number of Crimes"
+ ) +
+ theme_minimal()
+
+```
+:::
+
+### Research Question 3
+
+::: {.card title="Question and Tools" width="40%"}
+
+***Is there a correlation between daily COVID cases and daily crime reports?***
+
+<br>
+
+**Tools:**
+
+This visualization analyzes whether the severity of the pandemic was associated with changes in crime levels. We used **group_by()** and **summarize()** to calculate the total number of crimes reported each day and matched it with the number of COVID-19 cases reported on the same date. We chose a scatterplot because it allows us to observe whether higher COVID case counts correspond with higher or lower crime levels. The **geom_smooth(method = "lm")** function adds a linear trend line, which provides a visual as to whether there is a general positive or negative relationship between the two variables.
+
+**Tools not covered in class:**
+
+We implemented the **geom_smooth()** function to add a smoothing line onto our scatterplot. So in this case, it's used to create the linear model trend line. Without it, we would have no way to visually summarize the directional relationship between COVID cases and crime counts using basic ggplot tools alone. We learned about this function through the tools provided for us in the assignment instructions.
+:::
+
+::: {.card title="Visualization"}
+```{r}
+#| fig-width: 10
+#| fig-height: 5
+#| fig-alt: "Figure 3: A scatterplot showing the relationship between daily COVID cases and daily crime reports"
+
+daily_data <- LA_joined |>
+  group_by(date) |>
+  summarize(
+    daily_crimes = n(),
+    covid_cases = mean(positive, na.rm = TRUE)
+  )
+
+ggplot(daily_data, aes(x = covid_cases, y = daily_crimes)) +
+  geom_point(alpha = 0.5, color = "skyblue") +
+  geom_smooth(method = "lm", se = FALSE) +
+  labs(
+    title = "Relationship Between COVID-19 Cases and Crime Reports",
+    x = "Daily COVID-19 Cases",
+    y = "Daily Crime Reports"
+  ) +
+  theme_minimal()
+
+```
+:::
+
+
+# Summary
+
+## Row {height=25%}
+
+::: {.card title="Finding 1: Crime Dropped Early"}
+**Daily crime reports decreased significantly during the initial COVID-19 lockdown period in early 2020.**
+:::
+
+::: {.card title="Finding 2: Most Common Crime"}
+**Stolen vehicles were the most frequently reported crime type during 2020–2021.**
+:::
+
+::: {.card title="Finding 3: Weak Correlation"}
+**The relationship between daily COVID-19 cases and daily crime reports was weak, with a mostly flat trend line.**
+:::
+
+## Row {height=75%}
+
+::: {.card title="Conclusion"}
+Throughout the process of analyzing these two datasets for our final project, our findings indicate that during the early stages of the COVID-19 lockdown, there *was* a significant drop in the amount of daily crime reports. However, there wasn't anything extremely dramatic or unseemingly, as indicated as the years progressed in our visualization for Research Question 1. The line plot (Figure 1) we created reveals that there was also a **decrease of crimes during the initial phase of the pandemic**, which supports our first research question. We hypothesized that this is likely due to **reduced mobility** and **social restrictions** that had an effect on crime patterns. This answers our first big picture question that yes, total crime in Los Angeles did decrease during the initial COVID-19 lockdown period.
+
+From our bar chart (Figure 2), we observed that the most frequent crime reported during the years 2020-2021 were **stolen vehicles**. This could potentially indicate that while overall crime decreased slightly towards the beginning, certain categories were more resilient to societal disruptions. One big limitation of our analysis is that the COVID data we utilized is at the **state level**, and some crimes certainly went unreported.
+
+As we continued to explore the relationship between daily COVID-19 cases and daily crime reports, our scatterplot (Figure 3) showed a **weak correlation**. While there may have been some fluctuations in crime and COVID cases, the trend line is mainly flat, meaning it doesn't point to either an extreme upwards or downwards trend. This suggests that pandemic severity may have influenced crime indirectly, for example through behavioral or social changes, but the overall impact on total crime counts was limited.
+
+In conclusion, our analysis likely **underestimates** actual crime levels, since the LAPD dataset only includes reported crimes and many incidents go unreported. If we think about the lockdown period, people may have been less likely to contact the police or be in a situation where they'd witness a crime. Additionally, using California state-level COVID data as a proxy for Los Angeles conditions may overestimate *or* underestimate local pandemic severity depending on how LA's outbreak compared to the rest of the state at a given time.
+
+As for future work, we anticipated that focusing on COVID-19 may *not* accurately portray **why** crime patterns fluctuate. We could venture into other **socioeconomic** datasets or examine **neighborhood-specific** datasets to better gauge what truly impacts crime.
+:::
