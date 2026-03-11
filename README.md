@@ -1,15 +1,43 @@
-**Daily Crime & COVID-19 Dashboard** | *Cristina De Dios, Zohra Buttar, Shinaya Hu*
+# Crime and COVID-19 Analysis Dashboard
 
-<br>
+This project presents an interactive dashboard that explores crime patterns in Los Angeles during the COVID-19 pandemic using crime report data and public health data. The analysis focuses on how crime levels changed over time during the pandemic and whether shifts in COVID-19 cases corresponded with changes in criminal activity.
 
-**About Our Project:**
+The dashboard combines data cleaning, statistical summaries, and visualizations to examine trends in daily crime reports, the most common crime types during the pandemic years, and the relationship between COVID-19 cases and crime levels.
 
-Los Angeles is California’s largest city, and it is widely known for its diverse population of 3.88 million people. Despite the city’s views and attractions, its crime rate is higher than the national average (with around 3,115 crimes per 100,000 residents). While there has been a substantial drop in violent crime, other crimes such as robberies, aggravated assaults, and property crimes have increased especially in areas such as downtown and Skid Row. 
 
-While crime in Los Angeles has been studied extensively, our topic is new because the period of our chosen dataset is from 2020 to present (2026). Because the data is continuously updated, our analysis captures ongoing change instead of focusing on a closed historical period. There are no books that fully analyze these changes post-2020 using real time data which makes our approach original. Since crime directly affects the residents of Los Angeles, this topic deals with fundamental life issues. Crime directly relates to safety, death, health, education, and money. Changes in crime rates affect where people feel safe to live, work, travel, and how resources are distributed across communities. Neighborhoods and communities that are within crime categories tend to receive a less distribution of resources. Our analysis will connect abstract numbers to individuals and neighborhoods. 
+## Dashboard
 
-The central approach we’ll be adopting is that COVID-19 fundamentally reshaped crime patterns in Los Angeles in ways that were unexpected. Instead of merely questioning whether crimes went “up” or “down,” we’ll take it a step further by examining how various crime types responded to social isolation and lockdown procedures. More specifically, we’ll compare trends from pre-pandemic times (2018-2019) with trends from peak pandemic times (2020-2021). By combining COVID-19 data, government restriction timelines, and crime reports, we’ll be able to find connections between pandemic phases and how crime responded.   
+The project is implemented in R using Quarto, with visualizations built using ggplot2 and data processing performed using dplyr from the tidyverse ecosystem.
 
-Our analysis will also move beyond commonly cited news reports and totals. By using abstract data by neighborhood, crime type, and time, we will reveal patterns that are not visible in headline statistics. This could potentially include certain crimes declining overall while spiking in specific areas or short term spikes connected to policy or social events. For example, perhaps property crimes spiked where buildings were vacant during closures, while violent crimes might’ve decreased due to confinement regulations. 
+The dashboard presents several analytical views, including:
 
-It is important to note that there are some elements of conflict that can attract and sustain the readers. There is a clear tension between public perception and a reality driven by data. The media will often create a narrative that suggests a single story about rising or falling crime rates. Sometimes these sources will shift the blame on marginalized communities without uncovering the several socioeconomic barriers these communities face. Our findings will do the opposite and will show conflicting trends, showing how the pandemic created distinct crime patterns. This will raise important questions about how policy changes could be made to help prevent further crime. Furthermore, our findings can also spread public awareness on crime and support public understanding too. 
+- Changes in total daily crime reports over time
+- Identification of the most common crime types during the pandemic years (2020–2021)
+- Examination of the relationship between COVID-19 case counts and daily crime reports
+- Contextual information describing the datasets and research questions
+
+The rendered dashboard allows viewers to explore how crime patterns shifted during the pandemic and whether public health conditions appear to influence criminal activity.
+
+
+## Data Sources
+
+This project draws on two main datasets:
+
+- **Los Angeles Crime Data** from
+  https://catalog.data.gov/dataset/crime-data-from-2020-to-present
+  The data allows us to analyze trends in reported crime across Los Angeles beginning in 2020.
+
+- **COVID-19 Case Data** from
+  https://covidtracking.com/data/
+  This dataset contains daily COVID-19 statistics collected from U.S. state public health departments. 
+
+By combining these datasets, the project investigates whether changes in pandemic conditions correspond with changes in crime patterns.
+
+
+## Technologies Used
+
+- R
+- Quarto
+- tidyverse
+- plotly
+- ggplot2
