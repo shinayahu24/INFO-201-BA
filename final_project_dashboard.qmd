@@ -104,6 +104,7 @@ Shinaya is interested in explaining the data and summarizing findings between th
 ```{r}
 library(dplyr)
 library(ggplot2)
+library(plotly)
 ```
 :::
 
@@ -169,9 +170,9 @@ This visualization examines how crime levels changed over time during the pandem
 ```{r}
 #| fig-width: 10
 #| fig-height: 5
-#| fig-alt: "Figure 1: A line plot showing daily crime reports in Los Angeles over time"
+#| fig-alt: "Figure 1: A line plot showing daily crime reports in Los Angeles over time from 2020-2024"
 
-LA_joined |>
+crime_plot <- LA_joined |>
   filter(date < as.Date("2025-01-01")) |>
   group_by(date) |>
   summarize(daily_crimes = n()) |>
@@ -183,6 +184,8 @@ LA_joined |>
     y = "Number of Crimes"
   ) +
   theme_minimal()
+
+ggplotly(crime_plot)
 ```
 :::
 
